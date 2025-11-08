@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from schema import IqviaIn, IqviaOut
 from agents.agent import agent
 
-app = FastAPI(title="IQVIA Mock Agent API")
+app = FastAPI(title="Synthera API Docs (Mock)")
 
 @app.post("/iqvia", response_model=IqviaOut)
 def iqvia_agent(payload: IqviaIn):
@@ -34,3 +34,6 @@ def iqvia_agent(payload: IqviaIn):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Agent execution failed: {e}")
+
+
+@app.post("/exim", )
