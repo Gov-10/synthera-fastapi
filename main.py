@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException
-from schema import IqviaIn, IqviaOut
+from schema import IqviaIn, IqviaOut, ClinicalIn, ClinicalOut
 from agents.agent import agent
+from agents.clinical_agent import clinical_agent
+import random
 
-app = FastAPI(title="Synthera API Docs (Mock)")
+app = FastAPI(title="Synthera Mock Agents (MOCK DATA ONLY)")
 
 @app.post("/iqvia", response_model=IqviaOut)
 def iqvia_agent(payload: IqviaIn):
@@ -36,4 +38,48 @@ def iqvia_agent(payload: IqviaIn):
         raise HTTPException(status_code=500, detail=f"Agent execution failed: {e}")
 
 
-@app.post("/exim", )
+@app.post("/clinical_agent",response_model= ClinicalOut)
+def clinical_route(payload: ClinicalIn):
+    try:
+        query = f"Generate mock data for Clinical Trials, Sponsor profiles, Trial Phase Distributions for {payload.molecule} in {payload.country}"
+        result = clinical_agent(query)
+        reasoning_summary = ""
+        try:
+            reasoning_summary = result.message["content"][0]["text"]
+        except Exception:
+            reasoning_summary = "No reasoning text returned by the model."
+        random.seed(hash((payload.molecule + payload.country).lower()) % 1000)
+        total_trials = random.randint(3, 10)
+        phase_distribution = {
+            "Phase I": random.randint(1, 3),
+            "Phase II": random.randint(1, 3),
+            "Phase III": random.randint(1, 2)
+        }
+        sponsors = random.sample(
+            ["Pfizer", "Cipla", "Sun Pharma", "GSK", "Dr. Reddy’s", "Novartis", "AstraZeneca"],
+            4
+        )
+        trials = [
+            {
+                "trial_id": f"CT-{random.randint(100, 999)}",
+                "phase": random.choice(["Phase I", "Phase II", "Phase III"]),
+                "sponsor": random.choice(sponsors),
+                "status": random.choice(["Recruiting", "Active", "Completed"])
+            }
+            for _ in range(total_trials)
+        ]
+        return {
+            "molecule": payload.molecule, 
+            "country": payload.country, 
+            "total_trials" : total_trials, 
+            "phase_distribution": phase_distribution,
+            "sponsors": sponsors,
+            "trial_details": trials,
+            "reasoning_summary": reasoning_summary,
+            "mock": True
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Agent execution failed: {e}")
+
+
+

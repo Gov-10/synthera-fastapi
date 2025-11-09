@@ -19,3 +19,20 @@ class IqviaOut(BaseModel):
     top_competitors: List[Competitor]
     reasoning_summary: str
     mock: bool = True
+
+from typing import List, Dict, Any
+
+class ClinicalOut(BaseModel):
+    molecule: str
+    country: str
+    total_trials: int
+    phase_distribution: Dict[str, int]
+    sponsors: List[str]
+    trial_details: List[Dict[str, Any]]
+    reasoning_summary: str
+    mock: bool = True
+
+
+class ClinicalIn(BaseModel):
+    molecule: str
+    country: str
